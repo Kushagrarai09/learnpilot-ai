@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, func
 from .database import Base
 
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
@@ -9,7 +8,6 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class Document(Base):
     __tablename__ = 'documents'
@@ -22,7 +20,6 @@ class Document(Base):
     status = Column(String(30), default='pending', nullable=False)
     index_error = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class StudyEvent(Base):
     __tablename__ = 'study_events'
