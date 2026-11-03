@@ -1,0 +1,12 @@
+services:
+  api:
+    build: ./backend
+    ports: ["8000:8000"]
+    env_file: ./backend/.env
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/learnpilot.db:/app/learnpilot.db
+    depends_on: [redis]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
