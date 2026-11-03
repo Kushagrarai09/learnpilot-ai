@@ -4,44 +4,54 @@ AI-powered personal learning and teaching assistant that turns study materials i
 
 ## Features
 
-- Upload PDF study materials and extract text page by page.
-- Ask questions about uploaded material using retrieval-augmented generation (RAG).
-- Receive answers with source filename and page references.
-- Generate quizzes and flashcards from study content.
-- Create a personalized seven-day learning plan.
-- Use a teacher assistant workflow for educational content.
-- Store application data with SQLAlchemy; SQLite is the default local database.
-- Run the application locally or with Docker Compose.
+- Upload text-based PDFs and extract page-level text with PyMuPDF.
+- Ask questions grounded in uploaded documents and view source filename/page citations.
+- Retrieval-augmented generation (RAG) using Sentence Transformers and ChromaDB, with lexical retrieval fallback.
+- Generate multiple-choice quizzes and flashcards from study material.
+- Create a seven-day personalized learning roadmap.
+- Generate teacher-oriented lesson plans and worksheets.
+- Track uploaded documents and quiz analytics.
+- Choose an LLM provider through environment configuration (Groq-compatible API or Gemini OpenAI-compatible endpoint).
 
-## Tech Stack
+## Stack
 
-**Frontend:** Next.js, React, TypeScript  
-**Backend:** Python, FastAPI  
-**Document processing:** PyMuPDF  
-**Embeddings and vector search:** Sentence Transformers, ChromaDB  
-**LLM providers:** Gemini or Groq  
-**Database:** SQLAlchemy with SQLite by default
+- **Frontend:** Next.js 15, React 19, TypeScript
+- **API:** Python, FastAPI
+- **PDF processing:** PyMuPDF
+- **Retrieval:** Sentence Transformers, ChromaDB, lexical fallback
+- **Persistence:** SQLAlchemy; SQLite by default
+- **Container support:** Docker Compose (API and Redis service)
 
-## Project Structure
+## Repository structure
 
 ```text
 learnpilot-ai/
-├── frontend/
-│   ├── app/
-│   ├── package.json
-│   └── next.config.ts
 ├── backend/
 │   ├── app/
+│   │   ├── main.py
+│   │   ├── ai.py
+│   │   ├── vector_store.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   ├── models.py
+│   │   └── schemas.py
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env.example
+├── frontend/
+│   ├── app/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env.local.example
 ├── docker-compose.yml
 └── README.md
 ```
 
-## Run Locally (Windows PowerShell)
+## Run locally on Windows
 
-### 1. Backend
+### 1. Start the FastAPI backend
+
+Open PowerShell:
 
 ```powershell
 cd backend
@@ -53,11 +63,12 @@ Copy-Item .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-API documentation: http://localhost:8000/docs
+API health check: http://localhost:8000/api/health  
+Interactive API docs: http://localhost:8000/docs
 
-### 2. Frontend
+### 2. Start the Next.js frontend
 
-Open a second terminal:
+In a second terminal, from the repository root:
 
 ```powershell
 cd frontend
@@ -66,11 +77,13 @@ Copy-Item .env.local.example .env.local
 npm run dev
 ```
 
-Frontend: http://localhost:3000
+Open http://localhost:3000.
 
-## LLM Configuration
+The frontend expects the API at `http://localhost:8000` by default. Change `NEXT_PUBLIC_API_URL` in `frontend/.env.local` if needed.
 
-Set your provider and API key in `backend/.env`. Example for Groq:
+## Configure an LLM (optional)
+
+The application can run in retrieval-demo mode without an API key. For a Groq-compatible provider, edit `backend/.env`:
 
 ```env
 LLM_PROVIDER=groq
@@ -79,24 +92,38 @@ LLM_MODEL=llama-3.3-70b-versatile
 LLM_BASE_URL=https://api.groq.com/openai/v1
 ```
 
-For Gemini, configure the provider, key, and model according to the settings supported by the backend.
+For Gemini, set `LLM_PROVIDER=gemini`, your API key, and a model supported by the configured Gemini endpoint.
 
-Never commit real API keys or secrets.
+**Never commit API keys, credentials, or real user documents.** The `.env` files are local configuration files; only the example templates belong in Git.
 
-## Current Scope and Limitations
+## API endpoints
 
-This repository contains an MVP scaffold. It is intended for local development and experimentation, not production deployment. Review authentication, authorization, file validation, upload limits, persistent vector storage, background processing, database migrations, and operational security before deploying it for real users.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Service health and LLM configuration |
+| GET | `/api/documents` | List uploaded documents |
+| POST | `/api/documents/upload` | Upload a PDF |
+| DELETE | `/api/documents/{id}` | Delete a document |
+| POST | `/api/chat` | Ask a grounded question |
+| POST | `/api/quiz` | Generate quiz questions |
+| POST | `/api/flashcards` | Generate flashcards |
+| POST | `/api/roadmap` | Generate a seven-day plan |
+| POST | `/api/teacher/lesson-plan` | Generate lesson-plan content |
+| GET | `/api/analytics` | Read simple learning analytics |
 
-Scanned PDFs that contain images rather than extractable text may require OCR, which is not included in the current implementation. AI-generated educational content should be reviewed for accuracy.
+## Current limitations
+
+This is an MVP for local development, not a production-ready learning platform. It does not currently include authentication, authorization, OCR for scanned PDFs, robust background ingestion, formal database migrations, or production-grade monitoring. Validate uploaded files and generated educational content before using the system with real users. The embedding model may download on first use and can require additional memory and startup time.
 
 ## Roadmap
 
-- Improve retrieval quality with chunking strategies, hybrid search, and reranking.
-- Add evaluation for answer faithfulness, retrieval quality, and citation correctness.
-- Add accounts, learning history, and spaced-repetition scheduling.
-- Add background ingestion jobs and production database configuration.
-- Add automated tests and deployment workflows.
+- Add authentication, user-specific document isolation, and authorization.
+- Add OCR for scanned PDFs and more robust file validation.
+- Improve chunking, hybrid retrieval, reranking, and citation verification.
+- Add automated RAG evaluation for faithfulness and retrieval quality.
+- Add spaced repetition, learner history, adaptive difficulty, and background jobs.
+- Add automated tests and production deployment configuration.
 
 ## License
 
-No license has been specified yet. All rights are reserved unless a license is added.
+No license has been specified yet. Add a license file before redistributing the project.
